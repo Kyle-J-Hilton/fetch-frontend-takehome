@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import Dropdown from "./Dropdown";
-import DropdownJob from "./DropdownOneValue";
+import Dropdown from "./Componets/Dropdown";
+import DropdownJob from "./Componets/DropdownOneValue";
+import axios from "axios";
 import "./App.css";
 
 function App() {
@@ -14,58 +15,54 @@ function App() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    // GET request
+    // GET request for states data
     fetch("https://frontend-take-home.fetchrewards.com/form")
       .then((response) => response.json())
       .then((data) => setOptions(data.states));
   }, []);
 
   useEffect(() => {
-    // GET request
+    // GET request for occupation data
     fetch("https://frontend-take-home.fetchrewards.com/form")
       .then((response) => response.json())
       .then((data) => setJobOptions(data.occupations));
   }, []);
 
+  let jsonData = {
+    name: name,
+    email: email,
+    password: password,
+    occupation: occupation,
+    state: state.name,
+  };
+
+  //first check to see that all fields are filled out then POST
   let handleSubmit = async (e) => {
     e.preventDefault();
-    if (name === "" || email === "" || password === "" || occupation === "" || state.name === "") {
-      console.log('finish please');
-      setMessage("Please fill out all fields before submitting")
-    }else{
-      console.log(name);
-      console.log(email);
-      console.log(password);
-      console.log(occupation);
-      console.log(state.name);
+    if (
+      name === "" ||
+      email === "" ||
+      password === "" ||
+      occupation === "" ||
+      state.name === ""
+    ) {
+      console.log("finish please");
+      setMessage("Please fill out all fields before submitting");
+    } else {
+      console.log(jsonData);
+      JSON.stringify(jsonData);
 
-      try {
-        const res = await fetch(
-          "https://frontend-take-home.fetchrewards.com/form",
-          {
-            method: "POST",
-            body: JSON.stringify({
-              name: name,
-              email: email,
-              password: password,
-              occupation: occupation,
-              state: state,
-              message: message
-            }),
+      axios
+        .post("https://frontend-take-home.fetchrewards.com/form", jsonData)
+        .then((res) => {
+          console.log(res);
+          console.log(res.data);
+          if (res.status === 201) {
+            console.log("201");
+            setMessage("User registration completed successfully")
           }
-        );
-        if (res.status === 200) {
-        
-  
-          setMessage("User registration successful");
-        } else {
-          setMessage("Some error occured");
-        }
-      } catch (err) {
-        console.log(err);
-      }
+        });
     }
-    
   };
 
   return (
@@ -127,7 +124,7 @@ function App() {
           </label>
         </div>
         <div>
-          <button>Submit Contact</button>
+          <button className="Form-button">Submit Contact</button>
           <div className="message">{message ? <p>{message}</p> : null}</div>
         </div>
       </form>
